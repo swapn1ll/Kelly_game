@@ -7,11 +7,13 @@ as many as you like and press "Rescan folder" on the page. Standard library only
 """
 import argparse
 import json
+import re
 import secrets
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from .engine import load_config
 from .runner import ROOT, load_bots, play_match
 from .tournament import build_all, list_params, pairing_result
 
@@ -50,6 +52,31 @@ class Tournament:
             self.done = []
             self.state.update(pairings=[], current=None, run_from=0,
                               status='idle', message='Results cleared.')
+
+    def add_params(self, req):
+        """Save a parameter file typed into the page. Returns its path, e.g. params/my_game.txt."""
+        name = re.sub(r'[^A-Za-z0-9_-]+', '_', str(req.get('name') or '').strip()).strip('_')
+        if not name:
+            raise ValueError('Give the parameter file a name.')
+        folder = ROOT / self.params_dirs[0]
+        path = folder / f'{name}.txt'
+        if path.exists():
+            raise ValueError(f'{path.name} already exists. Pick another name.')
+        try:
+            a, b = int(req.get('capital_A')), int(req.get('capital_B'))
+        except (TypeError, ValueError):
+            raise ValueError("A's and B's starting money must be whole numbers.")
+        text = f'{a}\n{b}\n{str(req.get("probs") or "").strip()}\n'
+        folder.mkdir(parents=True, exist_ok=True)
+        tmp = folder / f'.{name}.tmp'
+        tmp.write_text(text, encoding='utf-8')
+        try:
+            load_config(tmp)                        # same checks as any parameter file
+        except ValueError:
+            tmp.unlink()
+            raise
+        tmp.replace(path)
+        return path.relative_to(ROOT).as_posix()
 
     def setup(self):
         bots = load_bots(self.registry)
@@ -216,6 +243,8 @@ def make_handler(t):
                     t.stop()
                 elif self.path == '/api/clear':
                     t.clear()
+                elif self.path == '/api/params':
+                    return self.send(200, {'ok': True, 'file': t.add_params(req)})
                 else:
                     return self.send(404, {'error': 'not found'})
                 self.send(200, {'ok': True})

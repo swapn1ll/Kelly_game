@@ -52,7 +52,17 @@ a{color:var(--teal)}
     <div class="botlist" id="bots"></div>
 
     <h2 style="margin-top:20px">2. Parameter files</h2>
-    <div class="row"><span class="muted">Read from <code id="pdir">params/</code>. Paste new files in, then rescan.</span><button class="ghost" id="rescan">Rescan folder</button></div>
+    <div class="row"><span class="muted">Read from <code id="pdir">params/</code>. Paste new files in, then rescan.</span><button class="ghost" id="rescan">Rescan folder</button><button class="ghost" id="newp">Add your own</button></div>
+    <div id="pform" hidden style="background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:6px 0 14px">
+      <div class="row" style="margin-top:0">
+        <label>Name <input type="text" id="pname" placeholder="my_game" style="width:160px"></label>
+        <label>A starts with $ <input type="number" id="pa" placeholder="1000" min="1" style="width:110px"></label>
+        <label>B starts with $ <input type="number" id="pb" placeholder="1500" min="1" style="width:110px"></label>
+      </div>
+      <label style="display:block">Probability that A wins each round (separated by spaces, commas or new lines)
+        <textarea id="pprobs" rows="4" placeholder="0.52 0.60 0.53 0.38 0.67" style="display:block;width:100%;margin-top:6px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px;font:13px ui-monospace,monospace"></textarea></label>
+      <div class="row" style="margin-bottom:0"><button id="psave">Save to params/</button><button class="ghost" id="pcancel">Cancel</button><span class="muted" id="pmsg"></span></div>
+    </div>
     <div class="tablewrap"><table><thead><tr><th>File</th><th class="num">A starts</th><th class="num">B starts</th><th class="num">Rounds</th><th class="num">Avg P(A)</th></tr></thead><tbody id="params"></tbody></table></div>
 
     <h2 style="margin-top:20px">3. Pairings</h2>
@@ -130,6 +140,17 @@ $('addPair').onclick=()=>{ const ks=SETUP.bots.map(b=>b.key), f=okParams()[0];
   outer: for(let i=0;i<ks.length;i++) for(let j=i+1;j<ks.length;j++) if(!used.has([ks[i],ks[j]].sort().join('|'))){pick=[ks[i],ks[j]];break outer;}
   custom.push({a:pick[0],b:pick[1],config:(custom.length?custom[custom.length-1].config:(f?f.file:''))}); renderPlan(); };
 $('rescan').onclick=loadSetup;
+$('newp').onclick=()=>{ $('pform').hidden=false; $('pname').focus(); };
+$('pcancel').onclick=()=>{ $('pform').hidden=true; $('pmsg').textContent=''; };
+$('psave').onclick=async()=>{
+  $('pmsg').style.color=''; $('pmsg').textContent='Saving...';
+  const r=await fetch('/api/params',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:$('pname').value,capital_A:$('pa').value,capital_B:$('pb').value,probs:$('pprobs').value})});
+  const j=await r.json();
+  if(!r.ok){ $('pmsg').style.color='var(--red)'; $('pmsg').textContent=j.error; return; }
+  $('pmsg').textContent='Saved as '+j.file; ['pname','pa','pb','pprobs'].forEach(id=>$(id).value='');
+  await loadSetup(); setTimeout(()=>{ $('pform').hidden=true; $('pmsg').textContent=''; },1500);
+};
 
 $('start').onclick=async()=>{
   $('err').textContent='';
