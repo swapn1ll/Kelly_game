@@ -5,14 +5,21 @@ from pathlib import Path
 
 
 def load_config(path):
+    """A parameter file: A's starting money, B's starting money, then the probability
+    that A wins each round (any number of them, spread over any lines).
+    Lines starting with # are comments. The number of rounds is how many probabilities there are."""
     lines = [s.split('#')[0].strip() for s in Path(path).read_text(encoding='utf-8-sig').splitlines()]
     lines = [s for s in lines if s]
-    if len(lines) < 4:
-        raise ValueError('Expected capital A, capital B, round count, then probabilities.')
-    a, b, n = map(int, lines[:3])
-    p = [float(s) for s in re.split(r'[,\s]+', ' '.join(lines[3:]))]
-    if a <= 0 or b <= 0 or n <= 0 or len(p) != n:
-        raise ValueError('Capitals/round count must be positive; probability count must match.')
+    if len(lines) < 3:
+        raise ValueError('Expected capital A, capital B, then the probabilities.')
+    a, b = int(lines[0]), int(lines[1])
+    p = [float(s) for s in re.split(r'[,\s]+', ' '.join(lines[2:])) if s]
+    if p and p[0] > 1 and p[0] == int(p[0]):     # older files also listed the number of rounds
+        n, p = int(p[0]), p[1:]
+        if n != len(p):
+            raise ValueError(f'The file says {n} rounds but has {len(p)} probabilities.')
+    if a <= 0 or b <= 0 or not p:
+        raise ValueError('Capitals must be positive and there must be at least one probability.')
     if any(not math.isfinite(q) or not 0 <= q <= 1 for q in p):
         raise ValueError('Probabilities must be finite numbers between 0 and 1.')
     return a, b, p

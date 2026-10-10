@@ -28,7 +28,7 @@ def main():
     probs = [round(rng.uniform(args.low, args.high), 3) for _ in range(args.rounds)]
     lines = [f'# {args.note}'] if args.note else []
     lines += [f'# A ${args.a}, B ${args.b}, {args.rounds} rounds, P(A wins) uniform in [{args.low}, {args.high}]',
-              str(args.a), str(args.b), str(args.rounds)]
+              str(args.a), str(args.b)]
     lines += [' '.join(map(str, probs[i:i + 20])) for i in range(0, len(probs), 20)]
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text('\n'.join(lines) + '\n', encoding='utf-8')

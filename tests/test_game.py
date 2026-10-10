@@ -51,10 +51,18 @@ class Rules(unittest.TestCase):
             self.assertEqual(a+b, 9000)
             self.assertGreaterEqual(min(a,b), 0)
 
+    def test_config_without_round_count(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)/'c.txt'
+            p.write_text('1000\n1500\n0.5 0.6\n0.7\n', encoding='utf-8')
+            self.assertEqual(load_config(p), (1000, 1500, [0.5, 0.6, 0.7]))
+            p.write_text('1000\n1500\n3\n0.5 0.6 0.7\n', encoding='utf-8')   # old style still works
+            self.assertEqual(load_config(p), (1000, 1500, [0.5, 0.6, 0.7]))
+
     def test_config_rejects_invalid(self):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d)/'bad.txt'
-            for text in ['1000\n1500\n2\n.5', '1000\n1500\n1\nnan', '-1\n1500\n1\n.5']:
+            for text in ['1000\n1500\n2\n.5', '1000\n1500\nnan', '-1\n1500\n.5', '1000\n1500\n1.5']:
                 p.write_text(text, encoding='utf-8')
                 with self.assertRaises(ValueError):
                     load_config(p)
@@ -82,7 +90,7 @@ class Runner(unittest.TestCase):
         path.write_text(text[:start] + mine + text[end:], encoding='utf-8')
         return {'name': name, 'cwd': str(folder), 'command': [sys.executable, 'bot.py']}
 
-    def config(self, text='1000\n1500\n10\n0.52 0.60 0.53 0.38 0.67 0.55 0.49 0.62 0.58 0.44'):
+    def config(self, text='1000\n1500\n0.52 0.60 0.53 0.38 0.67 0.55 0.49 0.62 0.58 0.44'):
         path = self.dir / 'cfg.txt'
         path.write_text(text, encoding='utf-8')
         return path
