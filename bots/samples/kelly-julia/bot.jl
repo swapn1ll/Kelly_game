@@ -1,5 +1,5 @@
 # Kelly game bot (Julia).
-# Edit ONLY the section marked below. Everything after it talks to the referee.
+# Edit ONLY the section marked below. Everything outside it talks to the referee.
 # Debug output goes to stderr, never stdout: stdout is reserved for your bets.
 
 # The game state, updated every round.
@@ -12,12 +12,12 @@ mutable struct State
     time_used::Float64          # seconds spent in choose_bet so far this game (timed by your bot)
 end
 
+# Do not edit above this line.
 # ================== EDIT ONLY THIS SECTION ==================
 # Write your strategy in choose_bet. You may add helper functions here.
 # s.round starts at 0 but Julia arrays start at 1, so this round's probability is s.probs[s.round + 1].
 # Return a whole number. At most 20% of your money (rounded down); a bigger bet is lowered to that.
-# You have 120 s per game. The referee's count is slightly higher than s.time_used (message delays),
-# so keep a margin, e.g. stop thinking hard once s.time_used > 110.
+# You have 120 seconds per game.
 
 function choose_bet(s)
     p = s.probs[s.round + 1]

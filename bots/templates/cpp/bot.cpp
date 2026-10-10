@@ -1,5 +1,5 @@
 // Kelly game bot (C++).
-// Edit ONLY the section marked below. Everything after it talks to the referee.
+// Edit ONLY the section marked below. Everything outside it talks to the referee.
 // Debug output goes to std::cerr, never std::cout: stdout is reserved for your bets.
 // Build: python3 build.py   (the referee does this for you before the tournament)
 #include <algorithm>
@@ -20,26 +20,14 @@ struct State {
     double time_used = 0;       // seconds spent in choose_bet so far this game (timed by your bot)
 };
 
+// Do not edit above this line.
 // ================== EDIT ONLY THIS SECTION ==================
 // Write your strategy in choose_bet. You may add #includes and helper functions here.
 // Return a whole number. At most 20% of my_capital (rounded down); a bigger bet is lowered to that.
-// You have 120 s per game. The referee's count is slightly higher than time_used (message delays),
-// so keep a margin, e.g. stop thinking hard once s.time_used > 110.
-
-// Your chance of winning round k.
-double my_chance(const State& s, int k) {
-    double p = s.probs[k];
-    return s.role == 'A' ? p : 1.0 - p;
-}
-
-// The most you may bet now: 20% of your money, rounded down.
-long long max_bet(const State& s) {
-    return s.my_capital * 20 / 100;
-}
+// You have 120 seconds per game.
 
 long long choose_bet(const State& s) {
-    // TODO: your strategy here. For example, my_chance(s, s.round) is your chance this round
-    // and max_bet(s) is the most you may bet.
+    // TODO: your strategy here
     return 0;
 }
 

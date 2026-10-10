@@ -191,13 +191,11 @@ Every round, `choose_bet` receives:
 
 These are the same inputs as last year's architecture. You are not told the opponent's name or bets.
 
-Two helpers come with the template: `my_chance(s)` (your chance of winning this round: `p` as A,
-`1 - p` as B) and `max_bet(s)` (20% of your money). The Python starter looks like this:
+The Python starter looks like this:
 
 ```python
 def choose_bet(s):
-    # TODO: your strategy here. For example, my_chance(s) is your chance this round
-    # and max_bet(s) is the most you may bet.
+    # TODO: your strategy here
     return 0
 ```
 

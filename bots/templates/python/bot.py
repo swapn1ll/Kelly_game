@@ -1,6 +1,6 @@
 """Kelly game bot (Python).
 
-Edit ONLY the section marked below. Everything after it talks to the referee.
+Edit ONLY the section marked below. Everything outside it talks to the referee.
 Print debug output to stderr, never stdout: stdout is reserved for your bets.
 """
 import json
@@ -9,6 +9,7 @@ import time
 from types import SimpleNamespace
 
 
+# Do not edit above this line.
 # ================== EDIT ONLY THIS SECTION ==================
 # Write your strategy in choose_bet. You may add imports and helper functions here.
 #
@@ -21,24 +22,10 @@ from types import SimpleNamespace
 #   s.time_used    seconds you have spent in choose_bet so far this game (timed by your bot)
 #
 # Return a whole number. You may bet at most 20% of your money (rounded down);
-# a bigger bet is lowered to that. You have 120 seconds per game. The referee's
-# count is slightly higher than s.time_used (message delays), so keep a margin,
-# e.g. stop thinking hard once s.time_used > 110.
-
-def my_chance(s, k=None):
-    """Your chance of winning round k (default: this round)."""
-    p = s.probs[s.round if k is None else k]
-    return p if s.role == 'A' else 1 - p
-
-
-def max_bet(s):
-    """The most you may bet now: 20% of your money, rounded down."""
-    return s.my_capital * 20 // 100
-
+# a bigger bet is lowered to that. You have 120 seconds per game.
 
 def choose_bet(s):
-    # TODO: your strategy here. For example, my_chance(s) is your chance this round
-    # and max_bet(s) is the most you may bet.
+    # TODO: your strategy here
     return 0
 
 # ============================================================
