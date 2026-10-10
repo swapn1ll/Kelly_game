@@ -8,7 +8,7 @@ a referee that runs the bots, a live dashboard in the browser, saved replays, an
 |---|---|
 | **Runs on** | Mac, Linux (including crunchy5) and Windows |
 | **Needs** | Python 3.8+, standard library only (nothing to `pip install`) |
-| **Clock** | 120 seconds of thinking time per bot per game(1 round = 2 games) |
+| **Clock** | 120 seconds of thinking time per bot per game |
 | **Bet limit** | 20% of your current money; a bigger bet is lowered to 20% |
 | **A pairing** | 2 games with roles swapped; your score is your money from both games added together |
 
