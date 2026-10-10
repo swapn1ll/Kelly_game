@@ -47,8 +47,10 @@ The page has four steps, then a live view and the results.
 
 1. **Bots** are read from `bots.json`.
 2. **Parameter files** are read from `params/`. Drop a new file in and press **Rescan folder**.
-   Each file holds A's starting money, B's starting money, the number of rounds, then the
-   probability that A wins each round. To make a practice file:
+   Each file holds A's starting money, B's starting money, then the probability that A wins
+   each round. The number of rounds is simply how many probabilities there are.
+   Or press **Add your own**, type a name, both starting amounts and the probabilities, and
+   **Save**: the file is checked, saved to `params/` and appears in the list straight away. To make a practice file:
    `python3 start.py params --a 2000 --b 3500 --rounds 100 --out params/my_game.txt`
 3. **Pairings:** press **Add pairing** and pick Bot 1, Bot 2 and a parameter file for each.
    Bot 1 plays A in game 1; the roles swap for game 2.
