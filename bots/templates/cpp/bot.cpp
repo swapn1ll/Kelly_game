@@ -13,7 +13,6 @@ using namespace std;
 // The game state, updated every round.
 struct State {
     char role = 'A';            // 'A' or 'B' (you play A in one game, B in the other)
-    int rounds = 0;             // rounds in this game
     int round = 0;              // this round, starting at 0
     vector<double> probs;       // probs[k] = probability that A wins round k (all rounds)
     long long my_capital = 0;   // your money now
@@ -89,7 +88,6 @@ int main() {
         if (type == "start") {
             st = State();
             st.role = str(line, "role")[0];
-            st.rounds = (int)num(line, "rounds");
             st.probs = arr(line, "probs");
             st.my_capital = (long long)num(line, "my_capital");
             st.opp_capital = (long long)num(line, "opp_capital");

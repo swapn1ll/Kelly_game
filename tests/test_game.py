@@ -119,10 +119,10 @@ class Runner(unittest.TestCase):
         self.assertEqual(st['history'], again['history'])        # same seed replays the same match
 
     def test_state_and_history_reach_the_bot(self):
-        # The bot fails (illegal bet) unless it gets exactly: role, rounds, round, probs, both amounts.
+        # The bot fails (illegal bet) unless it gets exactly: role, round, probs, both amounts.
         spy = self.bot('Spy', '    seen = set(vars(s)) - {"time_used"}\n'
-                              '    ok = seen == {"role", "rounds", "round", "probs", "my_capital", "opp_capital"}\n'
-                              '    ok = ok and s.my_capital + s.opp_capital > 0 and len(s.probs) == s.rounds\n'
+                              '    ok = seen == {"role", "round", "probs", "my_capital", "opp_capital"}\n'
+                              '    ok = ok and s.my_capital + s.opp_capital > 0 and 0 <= s.round < len(s.probs)\n'
                               '    return 1 if ok else -1')
         st = play_match(spy, self.bot('Seven', '    return min(7, s.my_capital // 5)'), self.config(), seed=2)
         self.assertFalse(any(g['errors'] for g in st['summary']['matches']))

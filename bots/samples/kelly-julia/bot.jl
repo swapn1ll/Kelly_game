@@ -5,7 +5,6 @@
 # The game state, updated every round.
 mutable struct State
     role::String                # "A" or "B" (you play A in one game, B in the other)
-    rounds::Int                 # rounds in this game
     round::Int                  # this round, starting at 0
     probs::Vector{Float64}      # probs[k + 1] = probability that A wins round k (all rounds)
     my_capital::Int             # your money now
@@ -78,7 +77,7 @@ function main()
     for line in eachline(stdin)
         t = str(line, "type")
         if t == "start"
-            st = State(str(line, "role"), int(line, "rounds"), 0, arr(line, "probs"),
+            st = State(str(line, "role"), 0, arr(line, "probs"),
                        int(line, "my_capital"), int(line, "opp_capital"), 0.0)
             println("{\"ready\":true}")
             flush(stdout)

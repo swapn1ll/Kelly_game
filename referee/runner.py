@@ -214,7 +214,7 @@ def play_game(bots, config, seed, clock, game=1, on_round=None, delay=0, stop=No
             s = sessions[role]
             s.start()
             reply, _ = s.ask({'type': 'start', 'protocol_version': PROTOCOL_VERSION,
-                              'role': 'AB'[role], 'rounds': len(probs), 'probs': probs,
+                              'role': 'AB'[role], 'probs': probs,
                               'my_capital': caps[role], 'opp_capital': caps[1 - role]},
                              STARTUP_LIMIT)
             if reply.get('ready') is not True:

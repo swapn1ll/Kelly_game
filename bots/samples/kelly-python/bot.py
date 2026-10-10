@@ -14,7 +14,6 @@ from types import SimpleNamespace
 #
 # s (the game state, updated every round):
 #   s.role         'A' or 'B' (you play A in one game and B in the other)
-#   s.rounds       number of rounds in this game
 #   s.round        this round, starting at 0
 #   s.probs        list: s.probs[k] = probability that A wins round k (all rounds)
 #   s.my_capital   your money now
@@ -43,7 +42,7 @@ def main():
         msg = json.loads(line)
         if msg['type'] == 'start':
             state = SimpleNamespace(
-                role=msg['role'], rounds=msg['rounds'], probs=msg['probs'], round=0,
+                role=msg['role'], probs=msg['probs'], round=0,
                 my_capital=msg['my_capital'], opp_capital=msg['opp_capital'], time_used=0.0)
             print(json.dumps({'ready': True}), flush=True)
         elif msg['type'] == 'bet':

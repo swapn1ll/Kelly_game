@@ -184,7 +184,6 @@ Every round, `choose_bet` receives:
 | Field | Meaning |
 |---|---|
 | `role` | `A` or `B` (you play A in one game and B in the other) |
-| `rounds` | number of rounds in this game |
 | `round` | this round, starting at 0 |
 | `probs` | the probability that **A** wins each round, for all rounds (Julia: `probs[round + 1]`) |
 | `my_capital`, `opp_capital` | your money and your opponent's money now |
@@ -284,7 +283,7 @@ If your bot needs anything beyond the standard library (for example numpy), tell
 One JSON object per line:
 
 ```
-referee -> bot   {"type":"start","role":"A","rounds":10,"probs":[...],"my_capital":1000,"opp_capital":1500}
+referee -> bot   {"type":"start","role":"A","probs":[...],"my_capital":1000,"opp_capital":1500}
 bot -> referee   {"ready":true}                                  (not timed, up to 30 s)
 referee -> bot   {"type":"bet","round":0,"my_capital":1000,"opp_capital":1500}
 bot -> referee   {"bet":40}                                      (timed)
