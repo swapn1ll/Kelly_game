@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+/results/
+/build/
+/bots/**/bot
+bot.tmp.*
+/bots/**/bot.exe
