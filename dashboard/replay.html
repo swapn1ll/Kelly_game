@@ -1,0 +1,86 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kelly Game • Match desk</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101923;color:#e9f0f5;font:16px system-ui,sans-serif}main{max-width:960px;margin:50px auto;padding:24px}small{color:#91a6b9;letter-spacing:2px}h1{font-size:44px;margin:12px 0}h2{font-size:20px}.sub{color:#a8b9c9;line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.card{background:#1b2937;padding:26px;border:1px solid #304354;border-radius:16px}.track{height:32px;background:#101923;border-radius:5px;overflow:hidden;margin:10px 0 24px}.bar{height:100%;background:#45d3b0;transition:width .15s}.second{background:#efb35e}.label{display:flex;justify-content:space-between;gap:15px}.label span{overflow-wrap:anywhere}input{width:100%;margin:22px 0}button{background:#45d3b0;color:#10241f;border:0;border-radius:7px;padding:12px 20px;font-weight:bold;cursor:pointer}.controls{margin-top:22px}.note{min-height:0;margin:8px 0;line-height:1.7;color:#b5c6d4}.amt{display:flex;align-items:baseline;gap:10px}
+.deltas{position:relative;width:0;height:1em;align-self:center}
+.delta{position:absolute;right:10px;bottom:-0.6em;white-space:nowrap;opacity:0;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;pointer-events:none}
+.delta.up{color:#45d3b0}.delta.down{color:#ff8a80}
+.delta.show{animation:pop 1.8s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translateY(10px) scale(.9)}12%{opacity:1;transform:none}60%{opacity:1;filter:none}100%{opacity:0;transform:translateY(-26px);filter:blur(4px)}}
+.delta.out{animation:out .45s ease-out forwards}
+@keyframes out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-24px);filter:blur(4px)}}
+@media (prefers-reduced-motion:reduce){.delta.show{animation:fade 1.8s forwards}@keyframes fade{0%,70%{opacity:1}100%{opacity:0}}}
+.clock{display:flex;justify-content:space-between;gap:15px;color:#b5c6d4;font-size:14px;margin:-14px 0 20px}.clock .low{color:#ff8a80}.compact body{background:transparent}.compact main{margin:0 auto;padding:4px 2px}.compact .hide,.compact #slider,.compact #prev,.compact #next,.compact #play,.compact #latest,.compact #g1,.compact #g2,.compact .nav{display:none}.compact .sb .gcol{cursor:default}.compact .sb .gcol:hover{background:none}.compact h2{margin-top:0}.draw{margin-top:14px;background:#f4f7fa;color:#10241f;border-radius:12px;padding:14px 16px}
+.draw .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.draw .chip{background:#e1e8ef;border-radius:999px;padding:5px 12px;font-size:14px}.draw .chip b{font-variant-numeric:tabular-nums}
+.draw .chip.win{font-weight:800;color:#10241f}
+.draw .ruler{position:relative;display:flex;height:26px;border-radius:7px;overflow:visible}
+.draw .za,.draw .zb{display:flex;align-items:center;padding:0 9px;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden}
+.draw .za{border-radius:7px 0 0 7px}.draw .zb{flex:1;justify-content:flex-end;border-radius:0 7px 7px 0}
+.draw .pin{position:absolute;top:-6px;bottom:-6px;width:4px;margin-left:-2px;background:#10241f;border-radius:2px}
+.draw .why{margin-top:10px;font-size:13.5px;color:#3a4b5a}
+.tablewrap{overflow-x:auto;margin-top:16px}
+.sb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
+.sb th,.sb td{padding:10px 12px;border-bottom:1px solid #304354;text-align:right;white-space:nowrap}
+.sb th{color:#91a6b9;font-weight:500;font-size:13px}.sb th:first-child,.sb td:first-child{text-align:left}
+.sb .gcol{cursor:pointer}.sb .gcol:hover{background:#22384a}.sb .cur{background:#203447}
+.sb .team{display:flex;align-items:center;gap:8px;font-weight:600}.sb .dot{width:12px;height:12px;border-radius:3px;flex:none}
+.sb .rl{display:inline-block;min-width:20px;margin-left:6px;padding:0 5px;border-radius:5px;background:#304354;color:#b5c6d4;font-size:12px;text-align:center}
+.sb .tot{font-weight:800;font-size:17px}.sb .lead{color:#45d3b0}.sb .ff{color:#ff8a80;font-size:12px;margin-left:6px}
+.sb .lostc{color:#ff8a80}.sb tfoot td{color:#91a6b9;font-size:13px;border-bottom:0}
+.step{background:#304354;color:#e9f0f5}
+@media(max-width:650px){.tablewrap{overflow-x:auto;margin-top:16px}
+.sb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}h1{font-size:32px}main{margin:12px auto}}
+</style><main><small class="hide">COMPETITION / KELLY BETTING GAME</small><h1 class="hide">Match desk</h1><p class="sub" id="status">Connecting…</p><div class="grid"><section class="card"><h2>Current game</h2><p class="sub">Money held by each team now</p><div id="capital"></div></section><section class="card"><h2>Competition total</h2><p class="sub">Completed game + current game</p><div id="totals"></div></section></div><section class="card controls"><div class="label"><strong id="round">Waiting for players</strong><span id="position"></span></div><input id="slider" aria-label="Replay round" type="range" min="0" max="0" value="0"><button class="step" id="prev" aria-label="Previous round">◀</button> <button class="step" id="next" aria-label="Next round">▶</button> <button id="play">Play replay</button> <button id="latest">Latest / final</button> <button id="g1">Game 1</button> <button id="g2">Game 2</button><div id="rv"></div><p id="note" class="note">Both teams play once as A and once as B.</p><div class="tablewrap"><table class="sb" id="games"></table></div><p class="small nav" style="margin:6px 0 0">◀ ▶ or the ← → keys step one round. Click a game column to jump to it.</p></section><p class="sub hide">A receives the lower starting capital in competition setups. Team colors stay fixed when roles switch. A rise at the start of game 2 includes its new starting capital.</p></main>
+<script>
+const embedded = /* REPLAY_DATA */ null;
+let data=embedded, index=0, follow=true, timer=null, fetchedAt=0;
+function liveClocks(r){const b=data.time_budget||120;if(data.live_clocks&&index===data.history.length-1){const dt=(performance.now()-fetchedAt)/1000;return data.live_clocks.map((c,i)=>data.thinking[i]?Math.max(0,c-dt):c)}return r.clocks||[b,b]}
+const $=id=>document.getElementById(id);
+function bars(id,values,max,clocks,prev){const budget=data.time_budget||120,root=$(id),sig=data.names.join('|')+(clocks?'|c':'');
+ if(root.dataset.sig!==sig){root.dataset.sig=sig;root.innerHTML=values.map((_,i)=>`<div class="grp"><div class="label"><span class="nm"></span><span class="amt"><span class="deltas"></span><strong class="money"></strong></span></div><div class="track"><div class="bar${i?' second':''}"></div></div>${clocks?'<div class="clock"><span class="ct"></span><strong class="cv"></strong></div>':''}</div>`).join('')}
+ values.forEach((v,i)=>{const g=root.children[i];g.querySelector('.nm').textContent=data.names[i];g.querySelector('.money').textContent='$'+v.toLocaleString();g.querySelector('.bar').style.width=Math.max(0,Math.min(100,100*v/max))+'%';
+  if(clocks){g.querySelector('.ct').textContent=(data.thinking&&data.thinking[i]&&index===data.history.length-1)?'Thinking…':'Time left';const cv=g.querySelector('.cv');cv.textContent=Number(clocks[i]).toFixed(2)+' s of '+budget+' s';cv.className='cv'+(clocks[i]<10?' low':'')}
+  if(prev&&prev[i]!==v){const d=v-prev[i],box=g.querySelector('.deltas'),el=document.createElement('span');el.className='delta show '+(d>0?'up':'down');el.textContent=(d>0?'+':'−')+'$'+Math.abs(d).toLocaleString();el.addEventListener('animationend',()=>el.remove());for(const old of box.children)old.classList.add('out');box.append(el);while(box.childElementCount>4)box.firstElementChild.remove()}})}
+let shown=null;
+function render(){if(!data)return;$('status').textContent=data.status;const rows=data.history;$('slider').max=Math.max(0,rows.length-1);if(!rows.length){$('capital').replaceChildren();$('totals').replaceChildren();$('capital').dataset.sig='';$('totals').dataset.sig='';shown=null;$('round').textContent='Waiting for players';$('position').textContent='';$('note').textContent='';$('games').textContent='';$('rv').innerHTML='';return}index=Math.min(index,rows.length-1);$('slider').value=index;const r=rows[index];const total=(data.initial_capital_A+data.initial_capital_B)||Math.max(1,r.capital[0]+r.capital[1]);const key=data.names.join('|'),pr=(shown&&shown.key===key&&index>shown.index&&rows[shown.index]&&rows[shown.index].match===r.match)?rows[shown.index]:null;if(!shown||shown.key!==key||shown.index!==index)shown={key,index};bars('capital',r.capital,total,liveClocks(r),pr&&pr.capital);bars('totals',r.totals,total*2,null,pr&&pr.totals);$('round').textContent=`Game ${r.match} · Round ${r.round}`;games();$('position').textContent=`${index+1} / ${rows.length}`;roundView(r);$('note').textContent=r.errors?'Game ended: '+r.errors.map((x,i)=>x?('AB'[i]+': '+x):'').filter(Boolean).join('; '):r.round===0?'New game. Team '+data.names[r.match===1?0:1]+' plays A.':'';}
+function games(){const t=$('games'),cur=data.history[index]?data.history[index].match:1,info={};
+ for(const m of [1,2]){const rows=data.history.filter(r=>r.match===m);if(!rows.length)continue;const last=rows[rows.length-1];
+  const tA=m===1?0:1;info[m]={money:last.capital,round:last.round,errors:last.errors||null,roleOf:[tA===0?'A':'B',tA===1?'A':'B'],done:!!(last.errors)||m===1&&data.history.some(r=>r.match===2)||data.status==='Finished'}}
+ const total=[0,1].map(i=>[1,2].reduce((s,m)=>s+(info[m]?info[m].money[i]:0),0));
+ const lead=total[0]===total[1]?-1:total[0]>total[1]?0:1;
+ const cell=(m,i)=>{const g=info[m];if(!g)return`<td class="gcol" data-g="${m}">—</td>`;const e=g.errors&&g.errors['AB'.indexOf(g.roleOf[i])];
+  return`<td class="gcol ${m===cur?'cur':''}" data-g="${m}">${money(g.money[i])}<span class="rl">${g.roleOf[i]}</span>${e?`<span class="ff">forfeit: ${esc(e)}</span>`:''}</td>`};
+ const head=m=>{const g=info[m];return`<th class="gcol ${m===cur?'cur':''}" data-g="${m}">Game ${m}${g?(g.done?' · final':' · playing'):''}</th>`};
+ t.innerHTML=`<thead><tr><th>Team</th>${head(1)}${head(2)}<th>Total</th></tr></thead><tbody>${[0,1].map(i=>`<tr><td><span class="team"><span class="dot" style="background:${COL[i]}"></span>${esc(data.names[i])}</span></td>${cell(1,i)}${cell(2,i)}<td class="tot ${lead===i?'lead':''}">${money(total[i])}</td></tr>`).join('')}</tbody>
+ <tfoot><tr><td>Rounds played</td>${[1,2].map(m=>`<td class="gcol ${m===cur?'cur':''}" data-g="${m}">${info[m]?info[m].round+' / '+(data.probs?data.probs.length:'?'):'—'}</td>`).join('')}<td>${lead<0?'Tied':esc(data.names[lead])+' leads by '+money(Math.abs(total[0]-total[1]))}</td></tr></tfoot>`;
+ t.querySelectorAll('.gcol').forEach(c=>c.onclick=()=>jump(+c.dataset.g))}
+function jump(m){if(LIVE||!data)return;const i=data.history.findIndex(r=>r.match===m);if(i<0)return;follow=false;index=i;render()}
+
+const COL=['#45d3b0','#efb35e'];
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=v=>'$'+Number(v).toLocaleString();
+function roundView(r){const el=$('rv');if(r.errors||r.round===0||r.bet_A==null){el.innerHTML='';return}
+ const tA=r.match===1?0:1,adj=r.adjusted_from||{};
+ const row=t=>{const role=t===tA?'A':'B',bet=role==='A'?r.bet_A:r.bet_B,won=r.winner===data.names[t];
+  return`<tr><td><span class="team"><span class="dot" style="background:${COL[t]}"></span>${esc(data.names[t])}</span></td><td>${role}</td>
+  <td>${money(bet)}${adj[role]!=null?`<span class="ff" style="color:#91a6b9">asked ${money(adj[role])}</span>`:''}</td>
+  <td class="${won?'lead':'lostc'}" style="font-weight:700">${won?'Won +':'Lost −'}${money(r.transfer)}</td><td>${money(r.capital[t])}</td></tr>`};
+ el.innerHTML=`<div class="tablewrap"><table class="sb"><thead><tr><th>Game ${r.match} · Round ${r.round}</th><th>Role</th><th>Bet</th><th>Result</th><th>Money now</th></tr></thead>
+ <tbody>${row(0)}${row(1)}</tbody></table></div>${drawBox(r,tA)}`}
+function drawBox(r,tA){const aWins=r.draw<=r.probability,wt=aWins?tA:1-tA,pot=r.bet_A+r.bet_B,p=100*r.probability,d=Math.min(98.5,Math.max(1.5,100*r.draw));
+ return`<div class="draw"><div class="chips"><span class="chip">A's chance <b>${p.toFixed(1)}%</b></span><span class="chip">Random number <b>${r.draw.toFixed(3)}</b></span>
+ <span class="chip win" style="background:${COL[wt]}">${esc(data.names[wt])} (${aWins?'A':'B'}) wins ${money(pot)}${r.transfer<pot?` · loser paid all ${money(r.transfer)}`:''}</span></div>
+ <div class="ruler"><div class="za" style="width:${p}%;background:${COL[tA]}">A wins if the number is ${r.probability.toFixed(3)} or less</div><div class="zb" style="background:${COL[1-tA]}">B wins if above</div><div class="pin" style="left:${d}%"></div></div>
+ <div class="why">The referee rolls a random number from 0 to 1. It landed at <b>${r.draw.toFixed(3)}</b>, ${aWins?'inside':'outside'} A's zone, so <b>${aWins?'A':'B'}</b> wins.</div></div>`}
+const LIVE=location.pathname==='/live';
+function step(k){if(LIVE||!data||!data.history.length)return;follow=false;index=Math.max(0,Math.min(data.history.length-1,index+k));render()}
+$('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'&&e.target.type!=='range')return;if(e.key==='ArrowLeft'){e.preventDefault();step(-1)}if(e.key==='ArrowRight'){e.preventDefault();step(1)}});
+$('g1').onclick=()=>jump(1);$('g2').onclick=()=>jump(2);
+$('slider').oninput=()=>{follow=false;index=Number($('slider').value);render()};
+$('latest').onclick=()=>{follow=true;index=data.history.length-1;render()};
+$('play').onclick=()=>{if(timer){clearInterval(timer);timer=null;$('play').textContent='Play replay';return}follow=false;if(index>=data.history.length-1)index=0;timer=setInterval(()=>{render();if(index>=data.history.length-1){clearInterval(timer);timer=null;$('play').textContent='Play replay'}else index++},250);$('play').textContent='Pause'};
+async function poll(){try{data=await(await fetch('/state')).json();fetchedAt=performance.now();if(follow)index=data.history.length-1;render()}catch(e){$('status').textContent='Dashboard server is not running. Saved replays are in results/.'}}
+if(location.pathname==='/live')document.documentElement.classList.add('compact');if(embedded){index=data.history.length-1;render()}else{poll();setInterval(poll,500);setInterval(()=>{if(data&&data.live_clocks&&!timer)render()},100)}
+</script></html>

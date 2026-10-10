@@ -1,0 +1,165 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelly Tournament Desk</title>
+<style>
+:root{--bg:#101923;--card:#1b2937;--line:#304354;--ink:#e9f0f5;--muted:#91a6b9;--teal:#45d3b0;--amber:#efb35e;--red:#ff8a80;--field:#132130}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px 16px 60px}
+main{max-width:1200px;margin:0 auto;display:grid;gap:18px}
+small.kicker{color:var(--muted);letter-spacing:2px;font-size:12px}
+h1{font-size:38px;margin:6px 0 0;line-height:1.1}
+h2{font-size:18px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}h1{font-size:30px}}
+.muted{color:var(--muted)} .err{color:var(--red);min-height:1.4em}
+.botlist{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg label{padding:7px 12px;cursor:pointer;border-right:1px solid var(--line)} .seg label:last-child{border-right:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--teal);color:#10241f;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:10px 0}
+select,input[type=text],input[type=number]{background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 9px;font:inherit;max-width:100%}
+button{background:var(--teal);color:#10241f;border:0;border-radius:8px;padding:9px 16px;font:600 14px system-ui,sans-serif;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.stop{background:var(--red);color:#2b0f0c}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--amber);outline-offset:2px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:12.5px}
+td.num,th.num{text-align:right}
+th.sortable{cursor:pointer} th.sorted{color:var(--teal)}
+tr.now td{background:#22384a}
+.tag{display:inline-block;border-radius:999px;padding:0 8px;font-size:12px;background:var(--field);border:1px solid var(--line)}
+.tag.win{color:var(--teal);border-color:var(--teal)} .tag.fail{color:var(--red);border-color:var(--red)}
+.label{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.track{height:22px;background:var(--field);border-radius:5px;overflow:hidden;margin:6px 0 14px}
+.bar{height:100%;background:var(--teal);transition:width .2s} .bar.second{background:var(--amber)}
+a{color:var(--teal)}
+.progress{height:6px;background:var(--field);border-radius:4px;overflow:hidden;margin-top:8px}
+.progress div{height:100%;background:var(--amber);transition:width .3s}
+</style>
+<main>
+  <header><small class="kicker">COMPETITION / KELLY BETTING GAME</small><h1>Tournament desk</h1>
+    <p class="muted">Pick the bots, choose who plays whom and which parameter file each pairing uses, then start. Both games of a pairing use the same parameters; the random draws are fresh for every game.</p></header>
+
+  <section class="card" id="setup">
+    <h2>1. Bots</h2>
+    <p class="muted" style="margin:0 0 8px">Loaded from <code>bots.json</code>. Pick who plays whom in step 3.</p>
+    <div class="botlist" id="bots"></div>
+
+    <h2 style="margin-top:20px">2. Parameter files</h2>
+    <div class="row"><span class="muted">Read from <code id="pdir">params/</code>. Paste new files in, then rescan.</span><button class="ghost" id="rescan">Rescan folder</button></div>
+    <div class="tablewrap"><table><thead><tr><th>File</th><th class="num">A starts</th><th class="num">B starts</th><th class="num">Rounds</th><th class="num">Avg P(A)</th></tr></thead><tbody id="params"></tbody></table></div>
+
+    <h2 style="margin-top:20px">3. Pairings</h2>
+    <p class="muted" style="margin:0 0 8px">Add each pairing and choose its parameter file. Bot 1 plays A in game 1, then they swap.</p>
+    <div class="tablewrap"><table><thead><tr><th>#</th><th>Bot 1</th><th>Bot 2</th><th>Parameter file</th><th></th></tr></thead><tbody id="plan"></tbody></table></div>
+    <div class="row"><button class="ghost" id="addPair">Add pairing</button><span class="muted" id="planCount"></span></div>
+
+    <h2 style="margin-top:20px">4. Start</h2>
+    <p class="muted" style="margin:0">Each bot gets 120 seconds of thinking time per game (a fresh 120 s for game 2).</p>
+    <div class="row">
+      <button id="start">Start tournament</button><button class="stop" id="stop" disabled>Stop</button>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+
+  <section class="card"><h2>Live</h2><p id="status" class="muted">Idle.</p><div class="progress"><div id="prog" style="width:0"></div></div>
+    <iframe id="live" src="/live" title="Live match" style="width:100%;height:900px;border:0;margin-top:14px;background:transparent"></iframe></section>
+
+  <section class="card"><h2>Results</h2>
+    <div class="row" style="margin:0 0 10px"><button class="ghost" id="clear">Clear results</button><span class="muted" style="font-size:13px">Results add up across runs and survive a restart (saved in <code>results/all_results.json</code>).</span></div>
+    <div class="tablewrap"><table><thead><tr><th>#</th><th>Pairing</th><th>Parameters</th><th>Game 1 / Game 2 (final money)</th><th class="num">Totals</th><th>Winner</th><th>Replay</th></tr></thead><tbody id="results"><tr><td colspan="7" class="muted">Results appear here as pairings finish.</td></tr></tbody></table></div>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let SETUP={bots:[],params:[]}, custom=[], sortKey='share', running=false;
+const radio=n=>n==='mode'?'custom':'each';
+const okParams=()=>SETUP.params.filter(p=>!p.error);
+const selectedBots=()=>[...document.querySelectorAll('#bots input:checked')].map(i=>i.value);
+const botName=k=>(SETUP.bots.find(b=>b.key===k)||{name:k}).name;
+const fileOptions=sel=>okParams().map(p=>`<option value="${esc(p.file)}" ${p.file===sel?'selected':''}>${esc(p.name)}</option>`).join('');
+
+async function loadSetup(){
+  SETUP=await (await fetch('/api/setup')).json();
+  $('pdir').textContent=SETUP.params_dir;
+  $('bots').innerHTML=SETUP.bots.map(b=>`<span class="chip" style="cursor:default">${esc(b.name)}</span>`).join('');
+  $('params').innerHTML=SETUP.params.length?SETUP.params.map(p=>p.error?`<tr><td>${esc(p.name)}</td><td colspan="4" style="color:var(--red)">${esc(p.error)}</td></tr>`:
+    `<tr><td>${esc(p.name)}</td><td class="num">$${p.capital_A.toLocaleString()}</td><td class="num">$${p.capital_B.toLocaleString()}</td><td class="num">${p.rounds}</td><td class="num">${p.mean_p}</td></tr>`).join('')
+    :`<tr><td colspan="5" class="muted">No .txt files found in ${esc(SETUP.params_dir)}. Add parameter files there and rescan.</td></tr>`;
+  if(!custom.length && SETUP.bots.length>1 && okParams().length) custom.push({a:SETUP.bots[0].key,b:SETUP.bots[1].key,config:(okParams().find(p=>p.file.endsWith('sample.txt'))||okParams()[0]).file});
+  renderPlan();
+}
+
+let planCache=[];
+function buildPlan(){
+  const files=okParams().map(p=>p.file); if(!files.length) return [];
+  if(radio('mode')==='custom') return custom;
+  const ks=selectedBots(), out=[];
+  for(let i=0;i<ks.length;i++) for(let j=i+1;j<ks.length;j++) out.push({a:ks[i],b:ks[j]});
+  const assign=radio('assign');
+  out.forEach((p,i)=>{ const old=planCache.find(q=>q.a===p.a&&q.b===p.b);
+    p.config= assign==='same'?$('sameFile').value : assign==='rotate'?files[i%files.length] : (old&&files.includes(old.config)?old.config:files[i%files.length]); });
+  return out;
+}
+function renderPlan(){
+  const mode=radio('mode'), assign=radio('assign');
+  const plan=buildPlan(); planCache=plan;
+  const botOpts=sel=>SETUP.bots.map(b=>`<option value="${esc(b.key)}" ${b.key===sel?'selected':''}>${esc(b.name)}</option>`).join('');
+  const editableFile= mode==='custom'||assign==='each';
+  $('plan').innerHTML=plan.length?plan.map((p,i)=>`<tr>
+    <td>${i+1}</td>
+    <td>${mode==='custom'?`<select data-i="${i}" data-f="a">${botOpts(p.a)}</select>`:esc(botName(p.a))}</td>
+    <td>${mode==='custom'?`<select data-i="${i}" data-f="b">${botOpts(p.b)}</select>`:esc(botName(p.b))}</td>
+    <td>${editableFile?`<select data-i="${i}" data-f="config">${fileOptions(p.config)}</select>`:esc((okParams().find(f=>f.file===p.config)||{name:p.config}).name)}</td>
+    <td>${mode==='custom'?`<button class="ghost" data-del="${i}" aria-label="Remove pairing ${i+1}">Remove</button>`:''}</td></tr>`).join('')
+    :`<tr><td colspan="5" class="muted">${okParams().length?(mode==='custom'?'Press "Add pairing".':'Select at least two bots.'):'Add a parameter file first.'}</td></tr>`;
+  $('planCount').textContent=plan.length?`${plan.length} pairing${plan.length>1?'s':''}, ${2*plan.length} games`:'';
+  document.querySelectorAll('#plan select').forEach(s=>s.onchange=()=>{ const i=+s.dataset.i;
+    if(mode==='custom') custom[i][s.dataset.f]=s.value; else planCache[i].config=s.value; if(mode==='custom') renderPlan(); });
+  document.querySelectorAll('#plan [data-del]').forEach(b=>b.onclick=()=>{custom.splice(+b.dataset.del,1);renderPlan();});
+}
+$('addPair').onclick=()=>{ const ks=SETUP.bots.map(b=>b.key), f=okParams()[0];
+  const used=new Set(custom.map(p=>[p.a,p.b].sort().join('|'))); let pick=[ks[0],ks[1]||ks[0]];
+  outer: for(let i=0;i<ks.length;i++) for(let j=i+1;j<ks.length;j++) if(!used.has([ks[i],ks[j]].sort().join('|'))){pick=[ks[i],ks[j]];break outer;}
+  custom.push({a:pick[0],b:pick[1],config:(custom.length?custom[custom.length-1].config:(f?f.file:''))}); renderPlan(); };
+$('rescan').onclick=loadSetup;
+
+$('start').onclick=async()=>{
+  $('err').textContent='';
+  const plan=(radio('mode')==='custom'?custom:planCache).map(p=>({a:p.a,b:p.b,config:p.config}));
+  const r=await fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({pairings:plan})});
+  const j=await r.json(); if(!r.ok) $('err').textContent=j.error; else { $('live').closest('section').scrollIntoView({behavior:'smooth',block:'start'}); poll(); }
+};
+$('stop').onclick=()=>fetch('/api/stop',{method:'POST',body:'{}'});
+$('clear').onclick=async()=>{ if(!confirm('Clear all results? (A backup copy is kept in results/.)')) return;
+  const r=await fetch('/api/clear',{method:'POST',body:'{}'}); const j=await r.json(); $('err').textContent=r.ok?'':j.error; poll(); };
+
+async function poll(){
+  let s; try{ s=await (await fetch('/api/state')).json(); }catch(e){ $('status').textContent='Dashboard server is not running.'; return; }
+  running=s.status==='running';
+  $('start').disabled=running; $('stop').disabled=!running; $('clear').disabled=running;
+  $('status').textContent=s.message;
+  const mine=s.pairings.slice(s.run_from||0), done=mine.filter(p=>p.totals||p.error).length;
+  $('prog').style.width=mine.length?(100*done/mine.length)+'%':'0';
+  if(!s.pairings.length) $('results').innerHTML='<tr><td colspan="7" class="muted">Results appear here as pairings finish.</td></tr>';
+  else $('results').innerHTML=s.pairings.map((p,i)=>{
+    const [a,b]=p.bots; const name=(okParams().find(f=>f.file===p.config)||{name:p.config}).name;
+    if(p.error) return `<tr><td>${i+1}</td><td>${esc(a)} vs ${esc(b)}</td><td>${esc(name)}</td><td colspan="3"><span class="tag fail">${esc(p.error.slice(0,80))}</span></td><td></td></tr>`;
+    if(!p.totals) return `<tr class="${i===s.current?'now':''}"><td>${i+1}</td><td>${esc(a)} vs ${esc(b)}</td><td>${esc(name)}</td><td colspan="4" class="muted">${i===s.current?'playing now':'waiting'}</td></tr>`;
+    const pot=2*(p.capital_A+p.capital_B), ta=p.totals[a], tb=p.totals[b], w=ta>tb?a:tb>ta?b:'Tie';
+    const games=(p.matches||[]).map((g,k)=>`<div style="font-size:13px">G${k+1}: ${esc(g.name_A)} <span class="muted">(A)</span> $${g.final_capital_A.toLocaleString()} – ${esc(g.name_B)} <span class="muted">(B)</span> $${g.final_capital_B.toLocaleString()}</div>`).join('');
+    return `<tr><td>${i+1}</td><td>${esc(a)} vs ${esc(b)}</td><td>${esc(name)}</td><td>${games}</td><td class="num">$${ta.toLocaleString()} – $${tb.toLocaleString()}</td><td><span class="tag ${w==='Tie'?'':'win'}">${esc(w)}</span></td><td><a href="${esc(p.replay)}" target="_blank" rel="noopener">Open</a></td></tr>`;
+  }).join('');
+}
+// size the live view to its content (same page as the replays)
+setInterval(()=>{ try{ const f=$('live'), h=f.contentDocument.documentElement.scrollHeight; if(h&&Math.abs(f.offsetHeight-h)>4) f.style.height=h+'px'; }catch(e){} },300);
+loadSetup().then(poll); setInterval(()=>{ if(running) poll(); },800);
+</script>
