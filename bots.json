@@ -1,0 +1,5 @@
+[
+  {"name": "Kelly (Python)", "cwd": "bots/samples/kelly-python", "command": ["{python}", "bot.py"]},
+  {"name": "Kelly (C++)", "cwd": "bots/samples/kelly-cpp", "command": ["./bot"], "build": ["{python}", "build.py"]},
+  {"name": "Kelly (Julia)", "cwd": "bots/samples/kelly-julia", "command": ["julia", "--startup-file=no", "bot.jl"]}
+]
